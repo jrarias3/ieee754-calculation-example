@@ -29,6 +29,7 @@ float ieee_754(uint32_t const data) {
     bool sign = (data >> 31) & 1;
     uint8_t exp = (data >> 23) & 0xFF;
     uint32_t mantissa = data & 0x7FFFFF;
+
     if (exp == 0xFF) {
         if (mantissa == 0) {
             return sign ? -std::numeric_limits<float>::infinity() : std::numeric_limits<float>::infinity();
@@ -36,9 +37,14 @@ float ieee_754(uint32_t const data) {
             return std::numeric_limits<float>::quiet_NaN();
         }
     } else if (exp == 0) {
-        return (sign ? -1 : 1) * mantissa * std::pow(2, -126);
+        if (mantissa == 0){
+            return sign ? -0.0f : 0.0f;
+        }
+        return (sign ? -1 : 1) * (mantissa / static_cast<float>(1 << 23)) * std::pow(2, -126);
     }
-    return (sign ? -1 : 1) * (1 + mantissa / (1 << 23)) * std::pow(2, exp - 127);
+    return (sign ? -1 : 1) * (1.0f + mantissa / static_cast<float>(1 << 23)) * std::pow(2, exp - 127);
+
+    
 }
 
 /*
